@@ -6,7 +6,8 @@ from typing import List
 
 # ---- Gemini setup ----
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel("models/gemini-2.5-flash")
+model = genai.GenerativeModel("models/gemini-2.5-pro")
+
 
 app = FastAPI()
 
@@ -58,23 +59,26 @@ def recommend(req: RecommendReq):
     atr = compute_atr14(candles)
 
     prompt = f"""
-You are a crypto trade recommender. Markets: {req.market_type.upper()}.
+You are a crypto trade recommender AI. Markets: {req.market_type.upper()}.
 Given 60 sequential candles [O,H,L,C,V], choose a single action:
 - spot: BUY or SELL or SIDE
 - futures: LONG or SHORT or SIDE
 
-Return TP and SL as *fractions* of entry price.
-tp_pct 0.005..0.03  (0.5%..3%)
-sl_pct 0.003..0.02  (0.3%..2%)
+TP and SL returned as FRACTION of entry price.
 
-OUTPUT STRICT JSON ONLY:
+RULES:
+- confidence MUST be float between 0.1 and 0.9 (never 0.0, never 1.0)
+- tp_pct must be 0.005..0.03 (0.5%..3%)
+- sl_pct must be 0.003..0.02 (0.3%..2%)
+
+RETURN STRICT JSON ONLY:
 
 {{
   "direction":"UP|SIDE|DOWN",
   "action":"BUY|SELL|LONG|SHORT|SIDE",
-  "confidence":0.0,
-  "tp_pct":0.01,
-  "sl_pct":0.008
+  "confidence":0.55,
+  "tp_pct":0.012,
+  "sl_pct":0.009
 }}
 
 PAIR: {req.pair}
