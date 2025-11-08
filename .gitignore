@@ -1,0 +1,4 @@
+.env
+.venv
+test_model_list.py
+__pycache__/
