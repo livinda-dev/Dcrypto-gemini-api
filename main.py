@@ -22,7 +22,20 @@ def predict(req: CandleReq):
     interval: {req.interval}
     candle normalized values (60 rows): {req.candles}
 
-    Return JSON: {{"direction":"UP/SIDE/DOWN","confidence":0.xx}}
+    Return JSON EXACTLY like:
+    {{"direction":"UP","confidence":0.73}}
     """
     r = model.generate_content(prompt)
-    return r.text
+    text = r.text.strip()
+
+    # ensure valid JSON
+    import json
+    try:
+        data = json.loads(text)
+        return data
+    except:
+        # if model returns text string not valid json
+        if "UP" in text: return {"direction":"UP","confidence":0.0}
+        if "DOWN" in text: return {"direction":"DOWN","confidence":0.0}
+        return {"direction":"SIDE","confidence":0.0}
+
